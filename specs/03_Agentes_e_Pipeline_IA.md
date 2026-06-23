@@ -96,6 +96,7 @@ O backend pula a requisição ao Agente associado àquela palavra para poupar to
 
 **Componentes afetados:**
 Nenhuma tela de frontend diretamente, mas afeta a injeção do texto estruturado na API REST para posterior consumo.
+O comportamento dos agentes é inteiramente guiado pelo modelo presente no diretório `.agents` na raiz do projeto. Cada agente acionado possui sua própria subpasta com um `SKILL.md` contendo o prompt do sistema.
 
 ---
 

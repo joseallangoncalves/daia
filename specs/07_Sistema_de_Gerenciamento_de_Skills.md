@@ -26,7 +26,7 @@ Se a LLM receber instruções enormes fixas no seu Master Prompt geral, ela cons
 
 ## 3. Goals (Objetivos)
 
-- [ ] G-01: Ler no backend a pasta `.agents/skills` mapeando os arquivos `SKILL.md` (ou YAML).
+- [ ] G-01: Ler no backend a pasta `.agents` na raiz do projeto, mapeando os arquivos `SKILL.md` (ou YAML).
 - [ ] G-02: Executar um Router inicial para identificar qual agente (skill) deve processar aquele trecho específico do contrato.
 - [ ] G-03: Inserir a documentação detalhada do Agente no Contexto da LLM apenas durante a iteração necessária (Runtime Injection).
 
@@ -52,7 +52,7 @@ Se a LLM receber instruções enormes fixas no seu Master Prompt geral, ela cons
 Prompts ficam misturados no meio do código Python em `app/agents/`, dificultando a manutenção.
 
 **Jornada futura:**
-O desenvolvedor de IA apenas cria uma nova pasta com o `SKILL.md` no backend, e o sistema lê dinamicamente, transformando-o num novo agente de extração de contratos disponível para o FastAPI.
+O desenvolvedor de IA apenas cria uma nova pasta com o `SKILL.md` dentro do diretório `.agents` na raiz do projeto, e o sistema lê dinamicamente, transformando-o num novo agente de extração de contratos disponível para o FastAPI.
 
 ---
 
@@ -62,7 +62,7 @@ O desenvolvedor de IA apenas cria uma nova pasta com o `SKILL.md` no backend, e 
 
 | ID | Requisito | Prioridade | Critério de Aceite |
 |----|-----------|-----------|-------------------|
-| RF-01 | `SkillLoader` | Must | Ler pasta `.agents/skills` via Python e carregar os metadados. |
+| RF-01 | `SkillLoader` | Must | Ler pasta `.agents` na raiz via Python e carregar os metadados. |
 | RF-02 | `SkillRouter` | Must | Retornar em JSON estruturado a skill acionada (ex: `{"skillName": "analista-clausulas"}`). |
 | RF-03 | Integração LLM | Must | Apenas a skill correspondente é injetada no System Prompt da chamada à API (OpenAI/Gemini). |
 
@@ -129,7 +129,7 @@ Não gera tabela no MySQL para as configurações, sendo baseado em leitura de Y
 
 ## 13. Plano de Rollout
 
-- **Estratégia:** Criar o diretório `.agents/skills` dentro de `backend/app/` e mover todos os hardcoded prompts para lá.
+- **Estratégia:** Utilizar o diretório `.agents` na raiz do projeto (`daia/.agents`) como modelo padrão e fonte da verdade. O backend deve ler os prompts e definições de skills diretamente destas pastas.
 
 ---
 

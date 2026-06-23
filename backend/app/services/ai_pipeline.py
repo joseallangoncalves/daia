@@ -55,16 +55,17 @@ from .skill_router import SkillRouter
 router = SkillRouter()
 
 def agent_cadastro(texto_completo: str) -> CadastroEmpresa:
-    skill = router.get_skill_by_id("cadastro")
+    # Como não temos uma skill separada de cadastro, podemos usar o analisador-contratual ou uma skill futura
+    skill = router.get_skill_by_id("analisador-contratual")
     system_prompt = skill.prompt if skill else "Você é um assistente de extração."
     return _call_llm_structured(system_prompt, texto_completo[:8000], CadastroEmpresa)
 
 def agent_clausulas(texto_segmentado: str) -> ClausulasContrato:
-    skill = router.get_skill_by_id("clausulas")
+    skill = router.get_skill_by_id("analisador-contratual")
     system_prompt = skill.prompt if skill else "Você extrai cláusulas."
     return _call_llm_structured(system_prompt, texto_segmentado, ClausulasContrato)
 
 def agent_sms(texto_segmentado: str) -> AnaliseSMS:
-    skill = router.get_skill_by_id("sms")
+    skill = router.get_skill_by_id("analisador-sms")
     system_prompt = skill.prompt if skill else "Você extrai regras de SMS."
     return _call_llm_structured(system_prompt, texto_segmentado, AnaliseSMS)
