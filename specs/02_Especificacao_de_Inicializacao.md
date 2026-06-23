@@ -1,116 +1,138 @@
-# 02 - Especificação de Inicialização e Configuração do Ambiente
+# Spec: PRD — 02 Inicialização e Configuração de Ambiente
 
-Este documento contém o passo a passo para o time de desenvolvimento (Backend, Frontend e DevOps) preparar e inicializar o ecossistema do MVP no "Dia 1".
+**Versão:** 1.0
+**Status:** Draft
+**Autor:** Equipe de Desenvolvimento
+**Data:** 2026-06-23
+**Reviewers:** Time Técnico
 
-## 1. Estrutura de Diretórios Recomendada
-A fim de separar responsabilidades, o repositório (`daia`) deve adotar a seguinte estrutura:
+---
 
-```text
-daia/
-├── backend/                  # Código FastAPI
-│   ├── app/
-│   │   ├── main.py           # Entrypoint da API
-│   │   ├── agents/           # Lógica dos Agentes de IA
-│   │   ├── routers/          # Endpoints
-│   │   ├── models/           # SQLAlchemy (MySQL)
-│   │   └── services/         # Ingestão de PDF (pypdf/pdfplumber)
-│   ├── requirements.txt      # Dependências Python
-│   └── .env.sample           # Exemplo de variáveis
-├── frontend/                 # Código React
-│   ├── src/
-│   │   ├── components/       # Interface
-│   │   ├── pages/            # Painel principal
-│   │   └── App.jsx
-│   └── package.json          # Dependências Node
-├── infra/
-│   └── init.sql              # Script SQL inicial (MySQL)
-├── docker-compose.yml        # Orquestração do MVP
-└── specs/                    # Documentação do MVP
-```
+## 1. Resumo
 
-## 2. Variáveis de Ambiente (`.env`)
-No diretório `backend`, crie um arquivo `.env` com a seguinte estrutura:
+Este documento contém o passo a passo para o time de desenvolvimento (Backend, Frontend e DevOps) preparar e inicializar o ecossistema do MVP no "Dia 1", utilizando Docker Compose para orquestrar os serviços.
 
-```env
-# Configurações do Banco de Dados
-MYSQL_USER=root
-MYSQL_PASSWORD=root_password
-MYSQL_DATABASE=contratos_db
-MYSQL_HOST=db
-MYSQL_PORT=3306
+---
 
-# Configurações de IA
-# Escolher e preencher o provedor de preferência da equipe
-OPENAI_API_KEY=sk-xxxx...
-GEMINI_API_KEY=AIzaSy...
+## 2. Contexto e Motivação
 
-# Ambiente
-ENVIRONMENT=development
-CORS_ORIGINS=http://localhost:3000
-```
+**Problema:**
+A necessidade de padronizar o ambiente de desenvolvimento local para evitar conflitos de dependências ("funciona na minha máquina") entre FastAPI, React e MySQL.
 
-## 3. Orquestração com Docker Compose
-No raiz do projeto, o `docker-compose.yml` deverá expor 3 serviços:
-1. `db`: Banco de Dados MySQL na porta 3306.
-2. `api`: Servidor FastAPI na porta 8000.
-3. `web`: Servidor React na porta 3000.
+**Solução:**
+Uma orquestração sólida via `docker-compose`, permitindo que o ambiente suba rapidamente para qualquer dev, isolando o banco, api e frontend.
 
-### 3.1 Exemplo simplificado de inicialização
-```yaml
-version: '3.8'
+---
 
-services:
-  db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: contratos_db
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
+## 3. Goals (Objetivos)
 
-  api:
-    build: ./backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    volumes:
-      - ./backend:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
+- [ ] G-01: Prover a estrutura de diretórios recomendada.
+- [ ] G-02: Definir as Variáveis de Ambiente (.env).
+- [ ] G-03: Definir o Docker Compose com 3 serviços (api, db, web).
+- [ ] G-04: Documentar o passo a passo de inicialização.
 
-  web:
-    build: ./frontend
-    command: npm start
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
+**Métricas de sucesso:**
+| Métrica | Baseline atual | Target | Prazo |
+|---------|---------------|--------|-------|
+| Tempo de setup do ambiente dev | Horas/Dias | < 10 minutos | Imediato |
 
-volumes:
-  db_data:
-```
+---
 
-## 4. Passo a Passo de Inicialização para o Desenvolvedor
+## 4. Non-Goals (Fora do Escopo)
 
-### Subindo os contêineres:
-1. Certifique-se de que o Docker e Docker Compose estão instalados.
-2. Crie seu `.env` com as chaves corretas da IA na pasta `backend`.
-3. Na raiz do projeto, execute:
-   ```bash
-   docker-compose up --build -d
-   ```
-4. Verifique os logs para garantir a subida correta:
-   ```bash
-   docker-compose logs -f
-   ```
+- NG-01: Deploy em nuvem pública neste documento (apenas inicialização local de dev).
 
-### Acessando as Interfaces:
-- **Painel Front-end (React):** `http://localhost:3000`
-- **Documentação da API (FastAPI Swagger):** `http://localhost:8000/docs`
-- **Banco de Dados (MySQL):** `localhost:3306` via DBeaver ou Workbench com credenciais do `.env`.
+---
 
-Com estes passos, o desenvolvedor está liberado para iniciar as atividades de "Ingestão de Contratos" e criar o primeiro Agente Python.
+## 5. Usuários e Personas
+
+**Usuário primário:** Desenvolvedores de Backend, Frontend e DevOps.
+
+**Jornada atual (sem a feature):**
+Configurações manuais na máquina do desenvolvedor de banco de dados, node e python.
+
+**Jornada futura (com a feature):**
+Desenvolvedor roda um comando `docker-compose up` e os três serviços sobem prontos.
+
+---
+
+## 6. Requisitos Funcionais
+
+### 6.1 Requisitos Principais
+
+| ID | Requisito | Prioridade | Critério de Aceite |
+|----|-----------|-----------|-------------------|
+| RF-01 | Configuração do .env | Must | Preencher com senhas locais e API Keys da IA. |
+| RF-02 | Docker Compose | Must | Serviço `api` (FastAPI porta 8000), `db` (MySQL porta 3306), `web` (React porta 3000). |
+| RF-03 | Acesso as UIs | Must | O Swagger deve estar em /docs e o Front em localhost:3000. |
+
+### 6.2 Fluxo Principal (Happy Path)
+
+1. Dev clona repositório.
+2. Cria o arquivo `.env` baseado no modelo.
+3. Roda `docker-compose up --build -d`.
+4. Dev acessa portas locais e inicia o trabalho.
+
+### 6.3 Fluxos Alternativos
+
+**Falha na Injeção de ENV:**
+Se a chave da OpenAI/Gemini não for providenciada, os contêineres podem subir, mas as chamadas falharão na hora do processamento.
+
+---
+
+## 7. Requisitos Não-Funcionais
+
+| ID | Requisito | Valor alvo | Observação |
+|----|-----------|-----------|------------|
+| RNF-01 | Orquestração | docker-compose | Padrão 3.8 do yaml. |
+| RNF-02 | Persistência | Volumes | O MySQL deve possuir um `volume` montado para não perder o banco entre reinicializações. |
+
+---
+
+## 8. Design e Interface
+
+**Componentes afetados:** 
+- Interface Swagger: `http://localhost:8000/docs`
+- Interface Web Local: `http://localhost:3000`
+- Banco Local: Acessível via clientes DBeaver na porta 3306.
+
+---
+
+## 9. Modelo de Dados
+
+**Entidades persistidas:**
+- Apenas as montagens de volume docker para preservar as tabelas do sistema de arquivos e `node_modules` em container local.
+
+---
+
+## 10. Integrações e Dependências
+
+| Dependência | Tipo | Impacto se indisponível |
+|-------------|------|------------------------|
+| Docker Desktop / Daemon | Obrigatória | O ambiente inteiro falha. |
+| OpenAI/Gemini API | Dependência Externa | Falha os módulos de Agentes se não houver internet / credencial. |
+
+---
+
+## 11. Edge Cases e Tratamento de Erros
+
+| Cenário | Trigger | Comportamento esperado |
+|---------|---------|----------------------|
+| EC-01: Portas ocupadas | Dev tem outro processo na 3306 ou 8000 | Container deve exibir falha no bind de porta, necessitando encerramento manual de outro app. |
+
+---
+
+## 12. Segurança e Privacidade
+
+- Variáveis sensíveis como chaves de API NUNCA devem ir para o controle de versão (`.env` no `.gitignore`).
+
+---
+
+## 13. Plano de Rollout
+
+- **Estratégia:** Inicialização em máquina local de dev rodando comandos de `docker`.
+
+---
+
+## 14. Open Questions
+- Nenhum.
